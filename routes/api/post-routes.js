@@ -1,6 +1,7 @@
 const router = require('express').Router();
-const { Post, User } = require('../../models');
+const { Post, User, Vote } = require('../../models');
 const { restore } = require('../../models/User');
+const sequelize = require('../../config/connection');
 
 router.get('/', (req, res) => {
     Post.findAll({
@@ -59,27 +60,12 @@ router.post('/', (req, res) => {
         });
 });
 
-router.put('/:id', (req, res) => {
-    Post.update(
-        {
-            title: req.body.title
-        },
-        {
-            where: {
-                id: req.params.id
-            }
-        }
-    )
-        .then(dbPostData => {
-            if (!dbPostData) {
-                res.status(404).json({ message: 'No post found with this id' });
-                return;
-            }
-            res.json(dbPostData);
-        })
+router.put('/upvote', (req, res) => {
+    Post.upvote(req.body, { Vote })
+        .then(updatedPostData => res.json(updatedPostData))
         .catch(err => {
             console.log(err);
-            res.status(500).json(err);
+            res.status(400).json(err);
         });
 });
 
